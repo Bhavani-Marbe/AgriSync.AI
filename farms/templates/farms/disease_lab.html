@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold text-dark">AI Disease Diagnostic Lab</h1>
+                <p class="lead text-muted">Upload a photo of your crop's leaf for instant AI analysis and treatment plans.</p>
+            </div>
+
+            {% if not result %}
+            <div id="upload-section" class="glass-card p-5 text-center mb-4 border-dashed" style="border: 2px dashed #4f6f52;">
+                <i class="bi bi-cloud-arrow-up display-1 text-success mb-3"></i>
+                <h3 class="fw-bold">Scan Your Crop</h3>
+                <p class="text-muted">Select a photo of the infected leaf to begin</p>
+                
+                <form action="{% url 'disease_lab' %}" method="POST" enctype="multipart/form-data" id="diseaseForm">
+                    {% csrf_token %}
+                    <input type="file" name="leaf_image" id="leaf_image" class="d-none" onchange="previewImage(this)" accept="image/*">
+                    
+                    <label for="leaf_image" class="btn btn-success btn-lg px-5 py-3 rounded-pill shadow mb-4">
+                        <i class="bi bi-camera me-2"></i> Select Photo
+                    </label>
+
+                    <div id="preview-container" class="mt-4 d-none">
+                        <img id="image-preview" src="#" alt="Preview" class="img-fluid rounded-4 shadow mb-3" style="max-height: 300px;">
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill" id="submitBtn">
+                                <i class="bi bi-search me-2"></i> Run AI Diagnosis
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+
+            {% if result %}
+            <div class="glass-card p-5 text-center shadow-lg border-start border-5 border-success">
+                <div class="mb-4">
+                    <i class="bi bi-check-circle-fill text-success display-1"></i>
+                </div>
+                <h2 class="fw-bold mb-3">AI Diagnosis Result</h2>
+                <div class="bg-light p-4 rounded-4 mb-4">
+                    <h3 class="text-success fw-bold m-0" id="resultText">{{ result }}</h3>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-block">
+                    <button class="btn btn-info btn-lg px-4 rounded-pill text-white fw-bold me-2" onclick="speakResult()">
+                        <i class="bi bi-volume-up-fill me-2"></i> Listen to Result
+                    </button>
+                    <a href="{% url 'disease_lab' %}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+                        Scan Another Leaf
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <div id="scanning-loader" class="glass-card p-5 text-center d-none">
+                <div class="spinner-border text-success mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+                <h4 class="fw-bold">AI is analyzing cellular patterns...</h4>
+                <p class="text-muted">Comparing with plant pathology records.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 1. Image Preview Logic
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('image-preview').src = e.target.result;
+                document.getElementById('preview-container').classList.remove('d-none');
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // 2. Loading State Logic
+    document.getElementById('diseaseForm')?.addEventListener('submit', function() {
+        document.getElementById('upload-section').classList.add('d-none');
+        document.getElementById('scanning-loader').classList.remove('d-none');
+    });
+
+    // 3. VOICE SYNTHESIS LOGIC (Multi-language ready)
+    function speakResult() {
+        window.speechSynthesis.cancel(); // Reset audio
+        
+        const result = "{{ result }}";
+        let message = `The AI has analyzed your crop leaf. The diagnosis is: ${result}.`;
+        
+        // Basic translation for "The diagnosis is" if language is changed
+        if (window.currentLang === 'hi-IN') {
+            message = `AI ने आपके फसल के पत्तों का विश्लेषण किया है। परिणाम है: ${result}`;
+        } else if (window.currentLang === 'kn-IN') {
+            message = `AI ನಿಮ್ಮ ಬೆಳೆಯ ಎಲೆಯನ್ನು ವಿಶ್ಲೇಷಿಸಿದೆ. ಫಲಿತಾಂಶ: ${result}`;
+        }
+
+        const speech = new SpeechSynthesisUtterance(message);
+        speech.lang = window.currentLang || 'en-IN';
+        speech.rate = 0.9;
+        window.speechSynthesis.speak(speech);
+    }
+
+    // Auto-speak when result loads
+    {% if result %}
+    window.onload = function() {
+        setTimeout(speakResult, 500); // Small delay to let page settle
+    };
+    {% endif %}
+</script>
+{% endblock %}

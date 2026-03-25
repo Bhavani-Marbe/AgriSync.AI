@@ -1,106 +1,107 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row mt-4">
-    <div class="col-md-7">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="fw-bold text-success">Your Farm Profiles</h3>
-            <span class="badge bg-success">{{ farms.count }} Total</span>
+<div class="container-fluid">
+    <div class="row align-items-center mb-5">
+        <div class="col-md-8">
+            <h1 class="display-5 fw-bold text-dark">Farm Intelligence Hub</h1>
+            <p class="text-muted lead">Monitor your crops and sync with real-time AI insights.</p>
         </div>
-
-        {% if farms %}
-            <div class="list-group shadow-sm">
-                {% for farm in farms %}
-                    <div class="list-group-item list-group-item-action p-4 mb-3 border-0 shadow-sm" style="border-radius: 15px; background-color: white;">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h4 class="mb-1 fw-bold text-dark">{{ farm.farm_name }}</h4>
-                                <p class="text-muted mb-2">
-                                    <i class="bi bi-geo-alt"></i> Coords: {{ farm.latitude }}, {{ farm.longitude }}
-                                </p>
-                                <div class="mt-2">
-                                    <span class="badge rounded-pill bg-light text-dark border px-3">Soil: {{ farm.soil_type }}</span>
-                                    <span class="badge rounded-pill bg-light text-dark border px-3">pH: {{ farm.ph_level }}</span>
-                                </div>
-                            </div>
-                            <a href="{% url 'predict_crop' farm.id %}" class="btn btn-success">View Report</a>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="text-center py-5 bg-white rounded shadow-sm border">
-                <h1 class="display-1 text-muted">🚜</h1>
-                <p class="lead text-muted">No farms added yet. Start by filling out the form on the right!</p>
-            </div>
-        {% endif %}
+        <div class="col-md-4 text-md-end">
+            <button class="btn btn-success btn-lg px-4 py-3 shadow-lg" data-bs-toggle="modal" data-bs-target="#addFarmModal">
+                <i class="bi bi-plus-lg me-2"></i> Register New Farm
+            </button>
+        </div>
     </div>
 
-    <div class="col-md-5">
-        <div class="card shadow border-0 p-4 sticky-top" style="border-radius: 20px; top: 20px;">
-            <h4 class="mb-4 fw-bold">Add New Farm Details</h4>
-            <form method="post" action="{% url 'dashboard' %}">
-                {% csrf_token %}
+    <div class="row mb-5 g-4">
+        <div class="col-md-3">
+            <div class="glass-card p-4 text-center bg-white">
+                <h6 class="text-muted text-uppercase small fw-bold">Total Farms</h6>
+                <h2 class="fw-bold mb-0 text-success">{{ farms.count }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-4 text-center bg-white">
+                <h6 class="text-muted text-uppercase small fw-bold">AI Status</h6>
+                <h2 class="fw-bold mb-0 text-primary">Active</h2>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="fw-bold mb-4 px-1">Your Registered Fields</h4>
+    <div class="row g-4">
+        {% for farm in farms %}
+        <div class="col-xl-4 col-md-6">
+            <div class="glass-card p-4 h-100 bg-white border-0">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
+                        <i class="bi bi-flower1 me-1"></i> {{ farm.intended_crop }}
+                    </div>
+                    <small class="text-muted fw-bold">{{ farm.created_at|date:"D, M d" }}</small>
+                </div>
                 
-                <div class="mb-3">
-                    <label class="form-label fw-bold small text-uppercase text-muted">Farm Identification</label>
-                    <input type="text" name="farm_name" class="form-control form-control-lg" placeholder="e.g. West Valley Plantation" required>
-                </div>
+                <h3 class="fw-bold mb-1">{{ farm.farm_name }}</h3>
+                <p class="text-muted small mb-4"><i class="bi bi-geo-alt-fill"></i> Loc: {{ farm.latitude|floatformat:2 }}, {{ farm.longitude|floatformat:2 }}</p>
 
-                <div class="row g-2 mb-3">
-                    <div class="col">
-                        <label class="form-label small text-muted">Latitude</label>
-                        <input type="number" step="any" name="lat" class="form-control" placeholder="12.97" required>
-                    </div>
-                    <div class="col">
-                        <label class="form-label small text-muted">Longitude</label>
-                        <input type="number" step="any" name="lon" class="form-control" placeholder="77.59" required>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold small text-uppercase text-muted">Soil Composition</label>
-                    <select name="soil_type" class="form-select mb-2" required>
-                        <option value="" disabled selected>Select Soil Type</option>
-                        <option value="Loamy">Loamy</option>
-                        <option value="Silt">Silt</option>
-                        <option value="Clay">Clay</option>
-                        <option value="Sandy">Sandy</option>
-                    </select>
-                </div>
-
-                <div class="row g-2 mb-3">
-                    <div class="col">
-                        <input type="number" name="n" class="form-control" placeholder="N" title="Nitrogen" required>
-                    </div>
-                    <div class="col">
-                        <input type="number" name="p" class="form-control" placeholder="P" title="Phosphorus" required>
-                    </div>
-                    <div class="col">
-                        <input type="number" name="k" class="form-control" placeholder="K" title="Potassium" required>
-                    </div>
-                    <div class="col">
-                        <input type="number" step="0.1" name="ph" class="form-control" placeholder="pH" title="pH Level" required>
+                <div class="p-3 rounded-4 bg-light mb-4">
+                    <div class="row text-center">
+                        <div class="col-3">
+                            <small class="d-block text-muted">N</small>
+                            <span class="fw-bold">{{ farm.nitrogen }}</span>
+                        </div>
+                        <div class="col-3">
+                            <small class="d-block text-muted">P</small>
+                            <span class="fw-bold">{{ farm.phosphorus }}</span>
+                        </div>
+                        <div class="col-3">
+                            <small class="d-block text-muted">K</small>
+                            <span class="fw-bold">{{ farm.potassium }}</span>
+                        </div>
+                        <div class="col-3 border-start">
+                            <small class="d-block text-muted">pH</small>
+                            <span class="fw-bold text-success">{{ farm.ph_level }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100 py-3 fw-bold mt-2 shadow-sm">
-                    Save Farm & Open Dashboard
-                </button>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'predict_crop' farm.id %}" class="btn btn-outline-success py-2 rounded-3 fw-bold">
+                        Analyze Market Sync
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="glass-card p-5">
+                <i class="bi bi-clipboard2-plus display-1 text-muted"></i>
+                <h3 class="mt-4 fw-bold">No farm profiles yet</h3>
+                <p class="text-muted">Register your first farm to unlock AI-driven insights and market prediction.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="modal fade" id="addFarmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="glass-card modal-content border-0 p-4">
+            <div class="modal-header border-0">
+                <h4 class="fw-bold">New Farm Profile</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="modal-body py-0">
+                    <input type="text" name="farm_name" class="form-control mb-3 p-3 rounded-3" placeholder="Farm Name" required>
+                     <input type="text" name="intended_crop" class="form-control mb-3 p-3 rounded-3" placeholder="Intended Crop (e.g. Rice)" required>
+                     </div>
+                <div class="modal-footer border-0">
+                    <button type="submit" class="btn btn-success w-100 py-3 mt-3">Register Farm</button>
+                </div>
             </form>
         </div>
     </div>
 </div>
-
-<style>
-    .form-control, .form-select {
-        border-radius: 10px;
-        border: 1px solid #e0e0e0;
-        padding: 10px 15px;
-    }
-    .form-control:focus {
-        border-color: #2e7d32;
-        box-shadow: 0 0 0 0.25rem rgba(46, 125, 50, 0.1);
-    }
-</style>
 {% endblock %}

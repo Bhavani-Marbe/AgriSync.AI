@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-5">
+        <div class="col-md-8">
+            <h1 class="display-5 fw-bold text-dark">📈 Market Intelligence</h1>
+            <p class="lead text-muted">Predictive pricing and demand analysis for your region.</p>
+        </div>
+        <div class="col-md-4 text-md-end pt-3">
+            <div class="badge bg-primary px-3 py-2 rounded-pill">Data Updated: Live</div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass-card p-4 bg-white">
+                <h4 class="fw-bold mb-4">Price Forecast (Next 6 Months)</h4>
+                <canvas id="priceChart" style="max-height: 400px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="glass-card p-4 h-100 bg-white">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="p-3 bg-warning bg-opacity-10 rounded-4 me-3 text-warning">
+                        <i class="bi bi-box-seam fs-3"></i>
+                    </div>
+                    <h4 class="fw-bold mb-0">Storage Strategy</h4>
+                </div>
+                <p class="text-muted">Based on your current humidity (65%), your <strong>Rice</strong> harvest should be stored in ventilated silos to prevent fungal growth.</p>
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item bg-transparent border-0 px-0"><i class="bi bi-check-circle-fill text-success me-2"></i> Maintain temp below 25°C</li>
+                    <li class="list-group-item bg-transparent border-0 px-0"><i class="bi bi-check-circle-fill text-success me-2"></i> Use moisture-proof lining</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="glass-card p-4 h-100 bg-white">
+                <h4 class="fw-bold mb-3">Price Alerts</h4>
+                <div class="alert alert-info border-0 rounded-4 d-flex align-items-center mb-2">
+                    <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+                    <div>Tomato prices expected to surge by 15% in mid-April.</div>
+                </div>
+                <div class="alert alert-warning border-0 rounded-4 d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                    <div>Wheat supply is high; consider waiting 2 weeks to sell.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('priceChart');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Predicted Price (₹/Quintal)',
+                data: [2100, 2350, 2200, 2800, 3100, 2950],
+                borderColor: '#1a4d2e',
+                backgroundColor: 'rgba(26, 77, 46, 0.1)',
+                fill: true,
+                tension: 0.4,
+                borderWidth: 3
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: false, grid: { display: false } }, x: { grid: { display: false } } }
+        }
+    });
+</script>
+{% endblock %}

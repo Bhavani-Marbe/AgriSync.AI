@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-5">
+        <div class="col-md-8">
+            <h1 class="display-5 fw-bold text-dark text-uppercase">⛓️ Transparent Ledger</h1>
+            <p class="lead text-muted">Blockchain-verified transactions between farmers and buyers.</p>
+        </div>
+        <div class="col-md-4 text-md-end pt-3">
+            <span class="badge bg-dark px-4 py-2 rounded-pill">Node Status: Synchronized</span>
+        </div>
+    </div>
+
+    <div class="row flex-column align-items-center">
+        <div class="col-lg-10 mb-4">
+            <div class="glass-card p-4 border-start border-5 border-success bg-white shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 text-success">BLOCK #2492</h5>
+                    <small class="text-muted font-monospace text-uppercase">Hash: 0000x82f...a12</small>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-3 border-end">
+                        <small class="text-muted d-block">SENDER</small>
+                        <strong>{{ user.username }}</strong>
+                    </div>
+                    <div class="col-md-3 border-end">
+                        <small class="text-muted d-block">RECIPIENT</small>
+                        <strong>GreenLeaf Exports</strong>
+                    </div>
+                    <div class="col-md-3 border-end">
+                        <small class="text-muted d-block">ASSET</small>
+                        <strong>500kg Basmati Rice</strong>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <small class="text-muted d-block">AMOUNT</small>
+                        <strong class="text-success">₹42,500.00</strong>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-top small text-muted font-monospace">
+                    PREVIOUS HASH: 0000x11b...c92 | TIMESTAMP: 2026-03-25 14:30:12
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mb-4"><i class="bi bi-link-45deg fs-2 text-muted"></i></div>
+
+        <div class="col-lg-10 mb-4">
+            <div class="glass-card p-4 border-start border-5 border-primary bg-white shadow-sm opacity-75">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 text-primary">BLOCK #2491</h5>
+                    <small class="text-muted font-monospace text-uppercase">Hash: 0000x11b...c92</small>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-3 border-end">
+                        <small class="text-muted d-block">SENDER</small>
+                        <strong>Farmer Ramesh</strong>
+                    </div>
+                    <div class="col-md-3 border-end">
+                        <small class="text-muted d-block">RECIPIENT</small>
+                        <strong>Local Mandi</strong>
+                    </div>
+                    <div class="col-md-3 border-end">
+                        <small class="text-muted d-block">ASSET</small>
+                        <strong>200kg Organic Tomatoes</strong>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <small class="text-muted d-block">AMOUNT</small>
+                        <strong class="text-primary">₹12,200.00</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -3,33 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgriSync | Smart Farming</title>
+    <title>AgriSync AI | Smart Farming Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
     <style>
-        :root { --agri-green: #2e7d32; --agri-light: #e8f5e9; }
-        body { background-color: #f4f7f6; }
-        .navbar { background-color: var(--agri-green); shadow: 0 2px 4px rgba(0,0,0,.1); }
-        .card { border: none; border-radius: 12px; transition: 0.3s; }
-        .btn-primary { background-color: var(--agri-green); border: none; }
-        .btn-primary:hover { background-color: #1b5e20; }
+        :root {
+            --primary-green: #1a4d2e;
+            --accent-green: #4f6f52;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #f0f4f2; 
+            color: #2d3436;
+            margin: 0;
+        }
+
+        /* Sidebar Styling */
+        .sidebar { 
+            height: 100vh; 
+            width: 260px; 
+            position: fixed; 
+            background: var(--primary-green); 
+            color: white; 
+            z-index: 1000;
+        }
+
+        .nav-link { 
+            color: rgba(255,255,255,0.7); 
+            margin: 8px 15px; 
+            border-radius: 12px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .nav-link:hover, .nav-link.active { 
+            background: var(--accent-green); 
+            color: white !important; 
+        }
+
+        /* Main Layout */
+        .main-content { 
+            margin-left: 260px; 
+            padding: 40px; 
+            min-height: 100vh;
+        }
+
+        .glass-card { 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(12px); 
+            border-radius: 24px; 
+            border: 1px solid rgba(255, 255, 255, 0.3); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        @media (max-width: 992px) {
+            .sidebar { width: 80px; text-align: center; }
+            .sidebar span, .sidebar h3 { display: none; }
+            .main-content { margin-left: 80px; }
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="/">🚜 AgriSync</a>
-            <div class="ms-auto">
-                {% if user.is_authenticated %}
-                    <span class="text-light me-3">Hi, {{ user.username }}</span>
-                    <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm">Logout</a>
-                {% else %}
-                    <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm">Login</a>
-                {% endif %}
-            </div>
+
+    <div class="sidebar d-flex flex-column p-3 shadow">
+        <h3 class="fw-bold mb-5 px-3">AgriSync<span class="text-warning">AI</span></h3>
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="bi bi-grid-fill"></i> <span data-nav="dash">Dashboard</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'market_trends' %}" class="nav-link {% if request.resolver_match.url_name == 'market_trends' %}active{% endif %}">
+                    <i class="bi bi-graph-up-arrow"></i> <span data-nav="market">Market Trends</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'disease_lab' %}" class="nav-link {% if request.resolver_match.url_name == 'disease_lab' %}active{% endif %}">
+                    <i class="bi bi-bug"></i> <span data-nav="lab">Disease Lab</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'blockchain_ledger' %}" class="nav-link {% if request.resolver_match.url_name == 'blockchain_ledger' %}active{% endif %}">
+                    <i class="bi bi-safe"></i> <span data-nav="ledger">Blockchain Log</span>
+                </a>
+            </li>
+        </ul>
+        
+        <hr>
+        
+        <div class="px-3 pb-3">
+            <p class="small mb-1 opacity-75">Farmer Profile:</p>
+            <h6 class="fw-bold text-white">{{ user.username }}</h6>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-light w-100 mt-2 rounded-pill">Logout</button>
+            </form>
         </div>
-    </nav>
-    <div class="container">
+    </div>
+
+    <div class="main-content">
+        <div class="d-flex justify-content-end align-items-center mb-4 gap-3">
+            <span class="small fw-bold text-muted text-uppercase">Interface Language:</span>
+            <select class="form-select w-auto glass-card shadow-sm border-0" id="langSelect" style="cursor: pointer;">
+                <option value="en-IN">English</option>
+                <option value="hi-IN">हिन्दी (Hindi)</option>
+                <option value="kn-IN">ಕನ್ನಡ (Kannada)</option>
+            </select>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
         {% block content %}{% endblock %}
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // 1. Define Translations
+        const translations = {
+            'en-IN': { 'dash': 'Dashboard', 'lab': 'Disease Lab', 'market': 'Market Trends', 'ledger': 'Blockchain Log' },
+            'hi-IN': { 'dash': 'डैशबोर्ड', 'lab': 'रोग लैब', 'market': 'बाज़ार रुझान', 'ledger': 'ब्लॉकचेन लॉग' },
+            'kn-IN': { 'dash': 'ಡ್ಯಾಶ್‌ಬೋರ್ಡ್', 'lab': 'ರೋಗ ಪ್ರಯೋಗಾಲಯ', 'market': 'ಮಾರುಕಟ್ಟೆ ಪ್ರವೃತ್ತಿಗಳು', 'ledger': 'ಬ್ಲಾಕ್‌ಚೈನ್ ಲಾಗ್' }
+        };
+
+        const langSelect = document.getElementById('langSelect');
+        
+        // 2. Function to update UI Text and Global Language Variable
+        function updateAppLanguage(langCode) {
+            // Set global variable for result.html and disease_lab.html to use
+            window.currentLang = langCode;
+            localStorage.setItem('selectedAgriLang', langCode);
+
+            const t = translations[langCode];
+            document.querySelectorAll('[data-nav]').forEach(el => {
+                const key = el.getAttribute('data-nav');
+                if (t[key]) el.innerText = t[key];
+            });
+
+            console.log("Language updated to: " + langCode);
+        }
+
+        // 3. Event Listener for Dropdown
+        langSelect.addEventListener('change', (e) => {
+            updateAppLanguage(e.target.value);
+        });
+
+        // 4. Initialize on Load (Check local storage)
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('selectedAgriLang') || 'en-IN';
+            langSelect.value = savedLang;
+            updateAppLanguage(savedLang);
+        });
+    </script>
+
+    {% block scripts %}{% endblock %}
 </body>
 </html>

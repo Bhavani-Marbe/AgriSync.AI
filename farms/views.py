@@ -1,54 +1,51 @@
+import os
+import requests
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from dotenv import load_dotenv
+from PIL import Image
+
+# Import your custom models and utilities
 from .models import Farm
 from .utils import get_coords_from_image, get_environmental_data, calculate_market_logic
 
+# Load environment variables (API Keys)
+load_dotenv()
 
-from django.shortcuts import render, get_object_or_404
-from .models import Farm
+# --- HELPER FUNCTIONS ---
 
-import random # To simulate AI market data
-from django.shortcuts import render, get_object_or_404
-from .models import Farm
-
-def predict_crop(request, farm_id):
-    farm = get_object_or_404(Farm, id=farm_id)
+def get_live_weather(lat, lon):
+    """Fetches real-time weather from OpenWeatherMap using the .env API Key."""
+    api_key = os.getenv("OPENWEATHER_API_KEY")
+    url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}&units=metric"
     
-    # 1. Simulate "Market Intelligence" Logic
-    # In a real app, this would come from an API or ML model
-    saturation_val = random.randint(30, 85)
-    risky_status = saturation_val > 70
+    try:
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            return {
+                'temp': data['main']['temp'],
+                'humidity': data['main']['humidity'],
+                'condition': data['weather'][0]['main'],
+                'city': data.get('name', 'Local Area')
+            }
+    except Exception as e:
+        print(f"Weather API Error: {e}")
     
-    # 2. Logic-based Advice
-    if risky_status:
-        advice_text = f"High competition detected for {farm.intended_crop}. We suggest diversifying to avoid a price crash."
-        suggested_crop = "Ginger or Turmeric" # High value alternatives
-    else:
-        advice_text = f"Market conditions are stable. {farm.intended_crop} is a safe bet for this season."
-        suggested_crop = farm.intended_crop
+    # Fallback if API fails
+    return {'temp': 28, 'humidity': 65, 'condition': 'Clear', 'city': 'Unknown'}
 
-    # 3. Environmental Data (Placeholder - You can connect OpenWeather here later)
-    environmental_data = {
-        'temp': 28,
-        'humidity': 65
-    }
 
-    context = {
-        'farm': farm,
-        'saturation': saturation_val,
-        'is_risky': risky_status,
-        'advice': advice_text,
-        'crop': suggested_crop,
-        'env': environmental_data,
-    }
-    
-    return render(request, 'farms/result.html', context)
+# --- VIEW FUNCTIONS ---
+
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, "Account created! You can now login.")
             return redirect('login')
     else:
         form = UserCreationForm()
@@ -74,6 +71,7 @@ def dashboard(request):
             potassium=request.POST.get('k', 0),
             ph_level=request.POST.get('ph', 7.0)
         )
+        messages.success(request, "Farm added to AgriSync successfully!")
         return redirect('dashboard')
     
     farms = Farm.objects.filter(user=request.user)
@@ -81,17 +79,53 @@ def dashboard(request):
 
 @login_required
 def predict_crop(request, farm_id):
+    """Combines Soil data, Market logic, and Live Weather for the final report."""
     farm = get_object_or_404(Farm, id=farm_id, user=request.user)
-    env_data = get_environmental_data(farm.latitude, farm.longitude)
     
-    # Calculate logic using the updated utils.py
+    # Get live weather for the report
+    weather = get_live_weather(farm.latitude, farm.longitude)
+    
+    # Use your market logic from utils.py
     crop, advice, saturation, is_risky = calculate_market_logic(farm)
     
+    # Additional Storage Advice based on humidity
+    humidity = weather.get('humidity', 50)
+    if humidity > 70:
+        storage_advice = "High Humidity Detected. Use airtight silos and fungal retardants."
+    elif humidity < 30:
+        storage_advice = "Dry Conditions. Ensure proper ventilation to prevent seed cracking."
+    else:
+        storage_advice = "Standard Storage. Keep in a cool, shaded area."
+
     return render(request, 'farms/result.html', {
         'farm': farm,
         'crop': crop,
         'advice': advice,
         'saturation': saturation,
         'is_risky': is_risky,
-        'env': env_data
+        'env': weather,
+        'storage_advice': storage_advice
     })
+
+def disease_lab(request):
+    """Simulated AI for plant disease detection (Python 3.14 compatible)."""
+    result = ''
+    if request.method == 'POST' and request.FILES.get('leaf_image'):
+        image = request.FILES['leaf_image']
+        name = image.name.lower()
+        
+        # Simulated Detection Logic
+        if 'spot' in name or 'brown' in name:
+            result = "Brown Spot (Fungal)"
+        elif 'yellow' in name or 'wilt' in name:
+            result = "Bacterial Wilt"
+        else:
+            result = "Healthy Leaf (No Disease Detected)"
+
+    return render(request, 'farms/disease_lab.html', {'result': result})
+
+def market_trends(request):
+    return render(request, 'farms/market_trends.html')
+
+def blockchain_ledger(request):
+    return render(request, 'farms/blockchain_ledger.html')

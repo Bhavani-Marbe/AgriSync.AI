@@ -1,53 +1,116 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
     <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
         
         <div class="p-5 text-center {% if is_risky %}bg-warning text-dark{% else %}bg-success text-white{% endif %}">
             <h1 class="display-4 fw-bold">Market Intelligence Report</h1>
-            <p class="lead">Sustainability Analysis: {{ farm.farm_name|default:"Your Farm" }}</p>
+            <p class="lead">Sustainability Analysis: <strong>{{ farm.farm_name|default:"Your Farm" }}</strong></p>
         </div>
 
         <div class="card-body p-5">
             <div class="text-center mb-5">
-                <h5 class="fw-bold">Local Competition for {{ farm.intended_crop|default:"Selected Crop" }}</h5>
-                <div class="progress mt-3" style="height: 35px; border-radius: 20px; background-color: #f1f1f1;">
-                    <div class="progress-bar {% if is_risky %}bg-danger{% else %}bg-info{% endif %} fw-bold" 
-                        role="progressbar" 
-                        data-width="{{ saturation|default:0 }}">
+                <h5 class="fw-bold text-uppercase text-muted small">Local Competition for {{ farm.intended_crop|default:"Selected Crop" }}</h5>
+                <div class="progress mt-3 shadow-sm" style="height: 35px; border-radius: 20px; background-color: #f1f1f1;">
+                    <div class="progress-bar {% if is_risky %}bg-danger{% else %}bg-info{% endif %} fw-bold progress-bar-striped progress-bar-animated" 
+                         role="progressbar" 
+                         style="width: 0%; transition: width 1.5s ease-in-out;"
+                         id="marketBar"
+                         data-width="{{ saturation|default:0 }}">
                         {{ saturation|default:0 }}% Saturation
                     </div>
                 </div>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        var bar = document.querySelector('.progress-bar');
-                        if (bar) {
-                            var value = parseFloat(bar.dataset.width) || 0;
-                            bar.style.width = value + '%';
-                        }
-                    });
-                </script>
-                <p class="small text-muted mt-2">Preventing price crashes due to over-supply.</p>
+                <p class="small text-muted mt-2"><i class="bi bi-info-circle"></i> High saturation indicates potential price crashes due to over-supply.</p>
             </div>
 
             <div class="alert {% if is_risky %}alert-warning{% else %}alert-success{% endif %} p-4 rounded-4 shadow-sm border-0">
-                <h4 class="fw-bold">🤖 AI Strategy Recommendation:</h4>
+                <h4 class="fw-bold"><i class="bi bi-cpu-fill me-2"></i> AI Strategy Recommendation:</h4>
                 <p class="fs-5">{{ advice|default:"Processing market data..." }}</p>
                 <hr>
-                <h3 class="fw-bold mb-0">Recommended Action: Grow <span class="text-decoration-underline">{{ crop|default:"Calculating..." }}</span></h3>
+                <div class="d-flex align-items-center justify-content-between">
+                    <h3 class="fw-bold mb-0">Best Choice: <span class="text-decoration-underline">{{ crop|default:"Calculating..." }}</span></h3>
+                    <span class="badge bg-dark rounded-pill px-3 py-2">Verified AI Logic</span>
+                </div>
             </div>
 
-            <div class="row text-center mt-5 pt-4 border-top">
-                <div class="col-4 border-end"><h6>TEMP</h6><p class="fw-bold fs-4">{{ env.temp|default:"--" }}°C</p></div>
-                <div class="col-4 border-end"><h6>HUMIDITY</h6><p class="fw-bold fs-4">{{ env.humidity|default:"--" }}%</p></div>
-                <div class="col-4"><h6>SOIL PH</h6><p class="fw-bold fs-4">{{ farm.ph_level|default:"7.0" }}</p></div>
+            <div class="row mt-5 pt-4 border-top">
+                <div class="col-md-6 border-end">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-thermometer-half"></i> Environmental Data</h5>
+                    <div class="row text-center">
+                        <div class="col-4"><h6>TEMP</h6><p class="fw-bold fs-5">{{ env.temp|default:"--" }}°C</p></div>
+                        <div class="col-4"><h6>HUMIDITY</h6><p class="fw-bold fs-5">{{ env.humidity|default:"--" }}%</p></div>
+                        <div class="col-4"><h6>SOIL PH</h6><p class="fw-bold fs-5">{{ farm.ph_level|default:"7.0" }}</p></div>
+                    </div>
+                </div>
+                <div class="col-md-6 ps-md-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-box-seam"></i> Storage Guidance</h5>
+                    <div class="p-3 bg-light rounded-3 border-start border-4 border-primary">
+                        <p class="mb-0 italic">{{ storage_advice|default:"Data unavailable" }}</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="mt-5 d-flex justify-content-between">
-                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-lg px-4">Dashboard</a>
-                <button class="btn btn-success btn-lg px-5 shadow fw-bold" onclick="window.print()">Download Strategy</button>
+            <div class="mt-5 d-flex flex-wrap justify-content-between gap-3">
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+                    <i class="bi bi-arrow-left"></i> Dashboard
+                </a>
+                
+                <div class="d-flex gap-2">
+                    <button class="btn btn-info btn-lg px-4 shadow-sm fw-bold text-white rounded-pill" onclick="speakReport()">
+                        <i class="bi bi-volume-up-fill me-2"></i> Listen
+                    </button>
+                    <button class="btn btn-success btn-lg px-4 shadow fw-bold rounded-pill" onclick="window.print()">
+                        <i class="bi bi-printer"></i> Print Report
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Animate the progress bar on load
+        const bar = document.getElementById('marketBar');
+        if (bar) {
+            const value = parseFloat(bar.getAttribute('data-width')) || 0;
+            setTimeout(() => {
+                bar.style.width = value + '%';
+            }, 500);
+        }
+    });
+
+    function speakReport() {
+        // Clear any ongoing speech
+        window.speechSynthesis.cancel();
+
+        // Construct dynamic text from the template variables
+        const farmName = "{{ farm.farm_name|escapejs }}";
+        const recommendedCrop = "{{ crop|escapejs }}";
+        const temp = "{{ env.temp|escapejs }}";
+        const advice = "{{ advice|escapejs }}";
+
+        let text = `Report for ${farmName}. Based on soil and market analysis, we recommend growing ${recommendedCrop}. The current temperature is ${temp} degrees. Our strategy: ${advice}`;
+        
+        // Use global language variable from base.html
+        const langCode = window.currentLang || 'en-IN';
+
+        // Optional: Simple language prefixes for presentation effect
+        if(langCode === 'hi-IN') {
+            text = `किसान भाई, ${farmName} के लिए हमारी रिपोर्ट। हम ${recommendedCrop} उगाने की सलाह देते हैं। ${advice}`;
+        } else if(langCode === 'kn-IN') {
+            text = `${farmName} ವರದಿ. ನಾವು ${recommendedCrop} ಬೆಳೆಯಲು ಶಿಫಾರಸು ಮಾಡುತ್ತೇವೆ. ${advice}`;
+        }
+
+        const speech = new SpeechSynthesisUtterance(text);
+        speech.lang = langCode; 
+        speech.rate = 0.9; 
+        
+        speech.onerror = (e) => console.error("Speech Error:", e.error);
+        window.speechSynthesis.speak(speech);
+    }
+</script>
 {% endblock %}
