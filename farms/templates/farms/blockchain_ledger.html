@@ -1,75 +1,39 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<div class="container-fluid">
-    <div class="row mb-5">
-        <div class="col-md-8">
-            <h1 class="display-5 fw-bold text-dark text-uppercase">⛓️ Transparent Ledger</h1>
-            <p class="lead text-muted">Blockchain-verified transactions between farmers and buyers.</p>
-        </div>
-        <div class="col-md-4 text-md-end pt-3">
-            <span class="badge bg-dark px-4 py-2 rounded-pill">Node Status: Synchronized</span>
-        </div>
-    </div>
-
-    <div class="row flex-column align-items-center">
-        <div class="col-lg-10 mb-4">
-            <div class="glass-card p-4 border-start border-5 border-success bg-white shadow-sm">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0 text-success">BLOCK #2492</h5>
-                    <small class="text-muted font-monospace text-uppercase">Hash: 0000x82f...a12</small>
-                </div>
-                <div class="row g-3">
-                    <div class="col-md-3 border-end">
-                        <small class="text-muted d-block">SENDER</small>
-                        <strong>{{ user.username }}</strong>
-                    </div>
-                    <div class="col-md-3 border-end">
-                        <small class="text-muted d-block">RECIPIENT</small>
-                        <strong>GreenLeaf Exports</strong>
-                    </div>
-                    <div class="col-md-3 border-end">
-                        <small class="text-muted d-block">ASSET</small>
-                        <strong>500kg Basmati Rice</strong>
-                    </div>
-                    <div class="col-md-3 text-end">
-                        <small class="text-muted d-block">AMOUNT</small>
-                        <strong class="text-success">₹42,500.00</strong>
-                    </div>
-                </div>
-                <div class="mt-3 pt-3 border-top small text-muted font-monospace">
-                    PREVIOUS HASH: 0000x11b...c92 | TIMESTAMP: 2026-03-25 14:30:12
-                </div>
+<div class="container-fluid p-0">
+    <h1 class="display-6 fw-bold mb-4">Blockchain Ledger</h1>
+    
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="bento-card">
+                <small class="text-muted text-uppercase fw-bold">Verified Blocks</small>
+                <h2 class="fw-bold m-0 mt-2">1,284</h2>
             </div>
         </div>
+        </div>
 
-        <div class="text-center mb-4"><i class="bi bi-link-45deg fs-2 text-muted"></i></div>
-
-        <div class="col-lg-10 mb-4">
-            <div class="glass-card p-4 border-start border-5 border-primary bg-white shadow-sm opacity-75">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0 text-primary">BLOCK #2491</h5>
-                    <small class="text-muted font-monospace text-uppercase">Hash: 0000x11b...c92</small>
-                </div>
-                <div class="row g-3">
-                    <div class="col-md-3 border-end">
-                        <small class="text-muted d-block">SENDER</small>
-                        <strong>Farmer Ramesh</strong>
-                    </div>
-                    <div class="col-md-3 border-end">
-                        <small class="text-muted d-block">RECIPIENT</small>
-                        <strong>Local Mandi</strong>
-                    </div>
-                    <div class="col-md-3 border-end">
-                        <small class="text-muted d-block">ASSET</small>
-                        <strong>200kg Organic Tomatoes</strong>
-                    </div>
-                    <div class="col-md-3 text-end">
-                        <small class="text-muted d-block">AMOUNT</small>
-                        <strong class="text-primary">₹12,200.00</strong>
-                    </div>
-                </div>
-            </div>
+    <div class="bento-card p-0 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle" style="color: var(--text-main);">
+                <thead style="background: rgba(0,0,0,0.2);">
+                    <tr>
+                        <th class="p-4 border-0">TX ID</th>
+                        <th class="border-0">ACTION</th>
+                        <th class="border-0">TIMESTAMP</th>
+                        <th class="text-end p-4 border-0">STATUS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr style="border-bottom: 1px solid var(--card-border);">
+                        <td class="p-4"><code style="color: var(--accent); font-weight: bold;">#{{ log.id }}</code></td>
+                        <td class="fw-semibold">{{ log.action }}</td>
+                        <td class="text-muted">{{ log.timestamp }}</td>
+                        <td class="text-end p-4"><span class="badge bg-success bg-opacity-25 text-success rounded-pill px-3">Verified</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
